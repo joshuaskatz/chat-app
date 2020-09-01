@@ -1,0 +1,5 @@
+.env-cmdrc.json
+/node_modules
+/dist
+sessions.txt
+ssr-cookie.txt
