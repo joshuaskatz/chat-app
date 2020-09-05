@@ -1,31 +1,36 @@
-import { ObjectType, Field } from "type-graphql";
 import {
-  PrimaryGeneratedColumn,
   Entity,
-  CreateDateColumn,
-  UpdateDateColumn,
+  PrimaryGeneratedColumn,
   Column,
   BaseEntity,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from "typeorm";
+import { ObjectType, Field, ID } from "type-graphql";
 
 @ObjectType()
 @Entity()
 export class User extends BaseEntity {
-  @Field()
+  @Field(() => ID)
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Field()
+  @Field(() => String)
   @Column({ unique: true })
-  username!: string;
+  username: string;
 
-  @Field()
+  @Field(() => String)
   @Column({ unique: true })
-  email!: string;
+  email: string;
 
-  //No field property. We don't want to expose this info to GraphQL!
   @Column()
-  password!: string;
+  password: string;
+
+  @Column({ nullable: true })
+  resetToken: string;
+
+  @Column("bigint", { nullable: true })
+  resetTokenExpiry: number;
 
   @Field(() => String)
   @CreateDateColumn()

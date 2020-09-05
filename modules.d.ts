@@ -4,7 +4,7 @@ declare namespace NodeJS {
     DB_USERNAME: string;
     DB_PASSWORD: string;
     DB_NAME: string;
-    SESSION_COOKIE: string;
+    JWT_SECRET: string;
     FRONTEND_URL: string;
   }
 }
