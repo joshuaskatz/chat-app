@@ -6,7 +6,8 @@ import { createConnection } from "typeorm";
 
 import { UserResolver } from "./resolver/user";
 import { User } from "./entity/User";
-import { MyContext } from "./MyContext";
+import { Request } from "./entity/Request";
+import { RequestResolver } from "./resolver/request";
 
 const main = async () => {
   await createConnection({
@@ -21,14 +22,14 @@ const main = async () => {
     ssl: {
       rejectUnauthorized: false,
     },
-    entities: [User],
+    entities: [User, Request],
   });
 
   const app = express();
 
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
-      resolvers: [UserResolver],
+      resolvers: [UserResolver, RequestResolver],
       validate: false,
     }),
     context: ({ req, res }) => {

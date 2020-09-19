@@ -8,6 +8,7 @@ import {
   Arg,
   UseMiddleware,
   Ctx,
+  Int,
 } from "type-graphql";
 import { User } from "../entity/User";
 import { hash, compare } from "bcryptjs";
@@ -16,7 +17,7 @@ import { isAuth } from "../utils/isAuth";
 import { MyContext } from "../MyContext";
 import { v4 as uuid4 } from "uuid";
 import { mailToken } from "../utils/mailToken";
-import { MoreThanOrEqual } from "typeorm";
+import { MoreThanOrEqual, getRepository } from "typeorm";
 
 @ObjectType()
 class AuthResponse {
@@ -48,15 +49,44 @@ class ResetPasswordInput {
 export class UserResolver {
   @Query(() => [User])
   async users(): Promise<User[]> {
-    return User.find();
+    return User.find({ relations: ["friends", "requests"] });
   }
 
   @Query(() => User)
   @UseMiddleware(isAuth)
   async me(@Ctx() { authPayload }: MyContext): Promise<User | undefined> {
-    const userId = authPayload!.userId;
+    const { userId } = authPayload!;
 
-    return User.findOne({ where: { id: userId } });
+    return User.findOne({
+      where: { id: userId },
+      relations: ["friends", "requests"],
+    });
+  }
+
+  @Mutation(() => Boolean)
+  @UseMiddleware(isAuth)
+  async removeFriend(
+    @Arg("user", () => Int) user: number,
+    @Ctx() { authPayload }: MyContext
+  ): Promise<Boolean> {
+    const { userId } = authPayload!;
+
+    const friends = await getRepository("friends").delete([
+      {
+        userId_1: userId,
+        userId_2: user,
+      },
+      {
+        userId_1: user,
+        userId_2: userId,
+      },
+    ]);
+
+    if (friends.affected! < 2) {
+      return false;
+    }
+
+    return true;
   }
 
   @Mutation(() => AuthResponse)
