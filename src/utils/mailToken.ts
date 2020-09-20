@@ -9,8 +9,8 @@ export const mailToken = async (
     port: 587,
     secure: false,
     auth: {
-      user: "username", //enter username here
-      pass: "password", //enter password here
+      user: process.env.MAIL_USER, //enter username here
+      pass: process.env.MAIL_PASS, //enter password here
     },
   });
 
