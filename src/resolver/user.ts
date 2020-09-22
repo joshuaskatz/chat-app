@@ -181,6 +181,10 @@ export class UserResolver {
       return false;
     }
 
+    if (data.password.length < 8) {
+      throw new Error("Password must be at least 8 characters");
+    }
+
     const hashedPassword = await hash(data.password, 12);
 
     await User.update(

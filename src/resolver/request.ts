@@ -97,7 +97,7 @@ export class RequestResolver {
   async friendRequest(
     @Arg("user", () => Int) user: number,
     @Ctx() { authPayload }: MyContext
-  ): Promise<Boolean | String> {
+  ): Promise<Boolean> {
     const { userId } = authPayload!;
 
     const userExists = await User.findOne({ where: { id: user } });
@@ -121,6 +121,6 @@ export class RequestResolver {
       })
       .execute();
 
-    return token;
+    return true;
   }
 }
