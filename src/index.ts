@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import express from "express";
-import { ApolloServer } from "apollo-server-express";
+import { ApolloServer, PubSub } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
 import { createConnection } from "typeorm";
 
@@ -8,6 +8,10 @@ import { UserResolver } from "./resolver/user";
 import { User } from "./entity/User";
 import { Request } from "./entity/Request";
 import { RequestResolver } from "./resolver/request";
+import { Chat } from "./entity/Chat";
+import { ChatResolver } from "./resolver/chat";
+import { ChatRoom } from "./entity/ChatRoom";
+import { ChatRoomResolver } from "./resolver/chatroom";
 
 const main = async () => {
   await createConnection({
@@ -22,21 +26,31 @@ const main = async () => {
     ssl: {
       rejectUnauthorized: false,
     },
-    entities: [User, Request],
+    entities: [User, Request, Chat, ChatRoom],
   });
 
   const app = express();
+  const pubsub = new PubSub();
 
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
-      resolvers: [UserResolver, RequestResolver],
+      resolvers: [
+        UserResolver,
+        RequestResolver,
+        ChatResolver,
+        ChatRoomResolver,
+      ],
       validate: false,
     }),
     context: ({ req, res }) => {
       return {
         req,
         res,
+        pubsub,
       };
+    },
+    subscriptions: {
+      path: "/subscriptions",
     },
   });
 

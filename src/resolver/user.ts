@@ -17,13 +17,25 @@ import { isAuth } from "../utils/isAuth";
 import { MyContext } from "../MyContext";
 import { v4 as uuid4 } from "uuid";
 import { mailToken } from "../utils/mailToken";
-import { MoreThanOrEqual, getRepository } from "typeorm";
+import {
+  MoreThanOrEqual,
+  getRepository,
+  createQueryBuilder,
+  getConnection,
+} from "typeorm";
 
 @ObjectType()
 class AuthResponse {
   @Field() token: string;
 
   @Field() user: User;
+}
+
+@ObjectType()
+export class MyFriendsResponse {
+  @Field() id: number;
+
+  @Field() username: string;
 }
 
 @InputType()
@@ -47,9 +59,28 @@ class ResetPasswordInput {
 
 @Resolver(User)
 export class UserResolver {
+  @Query(() => [MyFriendsResponse])
+  @UseMiddleware(isAuth)
+  async myFriends(
+    @Ctx() { authPayload }: MyContext
+  ): Promise<MyFriendsResponse[] | unknown[]> {
+    const { userId } = authPayload!;
+
+    return getConnection().query(
+      `
+      SELECT public.user.id, public.user.username 
+      FROM public.friends 
+      INNER JOIN public.user 
+      ON public.friends.friend = public.user.id
+      WHERE public.friends.user = $1
+    `,
+      [userId]
+    );
+  }
+
   @Query(() => [User])
   async users(): Promise<User[]> {
-    return User.find({ relations: ["friends", "requests"] });
+    return User.find({ relations: ["friends", "requests", "chatrooms"] });
   }
 
   @Query(() => User)
@@ -59,7 +90,7 @@ export class UserResolver {
 
     return User.findOne({
       where: { id: userId },
-      relations: ["friends", "requests"],
+      relations: ["friends", "requests", "chatrooms"],
     });
   }
 
@@ -73,12 +104,12 @@ export class UserResolver {
 
     const friends = await getRepository("friends").delete([
       {
-        userId_1: userId,
-        userId_2: user,
+        user: userId,
+        friend: user,
       },
       {
-        userId_1: user,
-        userId_2: userId,
+        user: user,
+        friend: userId,
       },
     ]);
 

@@ -82,8 +82,8 @@ export class RequestResolver {
       .insert()
       .into("friends")
       .values([
-        { userId_1: userId, userId_2: request?.fromUser },
-        { userId_1: request?.fromUser, userId_2: userId },
+        { user: userId, friend: request?.fromUser },
+        { user: request?.fromUser, friend: userId },
       ])
       .execute();
 
