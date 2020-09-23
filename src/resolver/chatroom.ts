@@ -39,7 +39,7 @@ export class ChatRoomResolver {
   ): Promise<Boolean> {
     const { userId } = authPayload!;
 
-    if (friends.length === 0 || friends.length > 4) {
+    if (friends.length === 0) {
       return false;
     }
 

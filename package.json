@@ -38,7 +38,7 @@
   "scripts": {
     "watch": "tsc -w",
     "db:setup": "ts-node ./src/test-utils/setup.ts",
-    "test": "env-cmd -f ./config/test.env jest && npm run db:setup",
+    "test": "env-cmd -f ./config/test.env jest --runInBand && npm run db:setup",
     "dev": "env-cmd -f ./config/dev.env nodemon dist/index.js",
     "start": "ts-node src/index.ts"
   },

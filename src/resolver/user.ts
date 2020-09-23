@@ -17,12 +17,7 @@ import { isAuth } from "../utils/isAuth";
 import { MyContext } from "../MyContext";
 import { v4 as uuid4 } from "uuid";
 import { mailToken } from "../utils/mailToken";
-import {
-  MoreThanOrEqual,
-  getRepository,
-  createQueryBuilder,
-  getConnection,
-} from "typeorm";
+import { MoreThanOrEqual, getRepository, getConnection } from "typeorm";
 
 @ObjectType()
 class AuthResponse {

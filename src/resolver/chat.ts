@@ -4,7 +4,6 @@ import {
   Ctx,
   Field,
   InputType,
-  Int,
   Mutation,
   Resolver,
   UseMiddleware,
