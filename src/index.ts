@@ -1,9 +1,9 @@
 import "reflect-metadata";
 import express from "express";
-import { ApolloServer, PubSub } from "apollo-server-express";
+import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
 import { createConnection } from "typeorm";
-
+import http from "http";
 import { UserResolver } from "./resolver/user";
 import { User } from "./entity/User";
 import { Request } from "./entity/Request";
@@ -30,7 +30,6 @@ const main = async () => {
   });
 
   const app = express();
-  const pubsub = new PubSub();
 
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
@@ -46,7 +45,6 @@ const main = async () => {
       return {
         req,
         res,
-        pubsub,
       };
     },
     subscriptions: {
@@ -62,7 +60,10 @@ const main = async () => {
     },
   });
 
-  app.listen(process.env.PORT || 4000, () => {
+  const httpServer = http.createServer(app);
+  apolloServer.installSubscriptionHandlers(httpServer);
+
+  httpServer.listen(process.env.PORT || 4000, () => {
     console.log("Listening on port 4000!");
   });
 };
