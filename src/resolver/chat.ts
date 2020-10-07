@@ -37,7 +37,6 @@ export class MessagePayload {
   @Field() message: string;
 
   @Field() chatroomId: number;
-
 }
 
 @Resolver(Chat)
@@ -80,7 +79,7 @@ export class ChatResolver {
   @UseMiddleware(isAuth)
   async sendMessage(
     @Arg("data", () => SendMessageInput) data: SendMessageInput,
-    @Ctx() { authPayload }: MyContext
+    @Ctx() { authPayload }: MyContext,
     @PubSub() pubsub: PubSubEngine
   ): Promise<Chat> {
     const { userId } = authPayload!;
@@ -99,7 +98,7 @@ export class ChatResolver {
       chatroomId: data.chatroomId,
     }).save();
 
-    const payload: MessagePayload = {...message}
+    const payload: MessagePayload = { ...message };
     await pubsub.publish("MESSAGES", payload);
 
     return message;

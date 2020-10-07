@@ -20,7 +20,7 @@ export const mailToken = async (
     subject: "Request Password Reset",
     html: `
         <div>
-            <a href='${process.env.FRONTEND_URL}/change-password/${token}'>Reset Password</a>
+            <a href='${process.env.FRONTEND_URL}/reset-password/${token}'>Reset Password</a>
             ${token}
         </div>
     `,
