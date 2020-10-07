@@ -17,7 +17,7 @@ import { isAuth } from "../utils/isAuth";
 import { MyContext } from "../MyContext";
 import { v4 as uuid4 } from "uuid";
 import { mailToken } from "../utils/mailToken";
-import { MoreThanOrEqual, getRepository, getConnection } from "typeorm";
+import { MoreThanOrEqual, getRepository, getConnection, Like } from "typeorm";
 
 @ObjectType()
 class AuthResponse {
@@ -73,9 +73,56 @@ export class UserResolver {
     );
   }
 
+  @Query(() => [MyFriendsResponse])
+  @UseMiddleware(isAuth)
+  async mutualFriends(
+    @Arg("user", () => Int) user: number,
+    @Ctx() { authPayload }: MyContext
+  ): Promise<MyFriendsResponse[] | unknown[]> {
+    const { userId } = authPayload!;
+
+    const mutual = await getConnection().query(
+      `
+      SELECT public.user.id, public.user.username 
+      FROM public.friends 
+      INNER JOIN public.user 
+      ON public.friends.friend = public.user.id
+      WHERE public.friends.user IN ($1, $2) 
+    `,
+      [userId, user]
+    );
+
+    let mutualFriends: number[] = [];
+    let list: { [key: string]: number } = {};
+    mutual.forEach((f: User) => (list[f.id] ? ++list[f.id] : (list[f.id] = 1)));
+    for (let key in list) {
+      if (list[key] === 2) {
+        mutualFriends.push(parseInt(key));
+      }
+    }
+
+    return User.findByIds(mutualFriends);
+  }
+
+  //Return all users but the authorized user.
   @Query(() => [User])
-  async users(): Promise<User[]> {
-    return User.find({ relations: ["friends", "requests", "chatrooms"] });
+  @UseMiddleware(isAuth)
+  async users(
+    @Arg("query", () => String, { nullable: true }) query: string,
+    @Ctx() { authPayload }: MyContext
+  ): Promise<User[]> {
+    const { userId } = authPayload;
+    let users: User[];
+    if (query) {
+      users = await User.find({
+        relations: ["friends"],
+        where: { username: Like(`%${query}%`) },
+      });
+    } else {
+      users = await User.find({ relations: ["friends"] });
+    }
+
+    return users.filter((u: User) => u.id !== userId);
   }
 
   @Query(() => User)
