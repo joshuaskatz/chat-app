@@ -110,17 +110,13 @@ export class UserResolver {
   async users(
     @Arg("query", () => String, { nullable: true }) query: string,
     @Ctx() { authPayload }: MyContext
-  ): Promise<User[]> {
+  ): Promise<User[] | void> {
     const { userId } = authPayload;
-    let users: User[];
-    if (query) {
-      users = await User.find({
-        relations: ["friends"],
-        where: { username: Like(`%${query}%`) },
-      });
-    } else {
-      users = await User.find({ relations: ["friends"] });
-    }
+
+    let users: User[] = await User.find({
+      relations: ["friends"],
+      where: { username: Like(`%${query}%`) },
+    });
 
     return users.filter((u: User) => u.id !== userId);
   }
@@ -132,7 +128,7 @@ export class UserResolver {
 
     return User.findOne({
       where: { id: userId },
-      relations: ["friends", "requests", "chatrooms"],
+      relations: ["friends"],
     });
   }
 

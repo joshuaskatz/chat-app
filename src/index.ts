@@ -47,6 +47,7 @@ const main = async () => {
         res,
       };
     },
+
     subscriptions: {
       path: "/subscriptions",
     },
